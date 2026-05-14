@@ -1,1 +1,1 @@
-# NIOSH-Lifting-Equation-Calculator
+# noish-calculator
