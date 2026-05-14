@@ -1,6 +1,5 @@
 # NIOSH Lifting Equation Calculator (MIL-STD-1472H)
 
-
 👉 **[Click Here for Live Demo](https://amber666-ux.github.io/niosh-calculator/)**
 
 ---
