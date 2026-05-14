@@ -8,8 +8,8 @@
 This tool was developed to simplify and automate the ergonomic risk assessment of lifting tasks. It calculates the **Recommended Weight Limit (WL)** and determines whether a lifting task is safe ("Yes" or "No") based on user-provided physical measurements.
 
 ## Key Features
-- **Strict Compliance:** Incorporates all multiplier formulas, look-up tables (Frequency & Coupling), and mathematical capping (limits multipliers to $\le 1.0$) as defined by the standard.
-- **Dynamic Session Records:** Users can continuously evaluate multiple working postures, and the tool will append the results dynamically into an interactive table.
+- **Strict Compliance:** Incorporates all multiplier formulas, look-up tables (Frequency & Coupling), and mathematical capping as defined by the standard (MIL-STD-1472H).
+- **Dynamic Session Records:** Users can continuously evaluate multiple working postures, and the tool will append the results dynamically into the table.
 - **Export to Excel:** Integrated with `SheetJS` to allow users to export all session records into an `.xlsx` file with a single click.
 
 ---
