@@ -25,4 +25,4 @@ This tool was developed to simplify and automate the ergonomic risk assessment o
 ---
 
 ## Note on Images
-The diagrams used in the calculator for ![Figure 1: Task Variables (H, V and D)](noish-picture1.jpg) and ![Figure 2: Asymmetry Angle (A)](noish-picture2.png) are sourced directly from the ergonomic standards guidelines for reference purposes (MIL-STD-1472H).
+The diagrams used in the calculator for ![Figure 1: Task Variables (H, V and D)](noish_picture1.jpg) and ![Figure 2: Asymmetry Angle (A)](noish_picture2.png) are sourced directly from the ergonomic standards guidelines for reference purposes (MIL-STD-1472H).
