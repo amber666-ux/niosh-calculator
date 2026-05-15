@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NIOSH Lifting Equation Calculator</title>
-    <!-- Include SheetJS for Excel export -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
         /* --- Base Styles --- */
@@ -44,12 +43,12 @@
         }
         .figure-box img {
             width: 100%;
-            height: 350px; 
-            object-fit: contain; 
+            height: 350px;
+            object-fit: contain;
             border: 1px solid #ddd;
             border-radius: 6px;
-            background-color: #ffffff; 
-            padding: 15px; 
+            background-color: #ffffff;
+            padding: 15px;
             box-sizing: border-box;
         }
         .figure-caption {
@@ -63,7 +62,7 @@
         .main-container {
             display: flex;
             gap: 20px;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -116,8 +115,8 @@
             cursor: pointer;
             transition: all 0.2s;
             font-size: 1em;
-            white-space: nowrap; 
-            flex-shrink: 0; 
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .btn-run { background-color: #007bff; color: white; font-size: 1.1em; margin-top: 10px; }
         .btn-run:hover { background-color: #0056b3; transform: translateY(-1px); }
@@ -148,14 +147,14 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             overflow-x: auto;
             box-sizing: border-box;
-            min-width: 0; 
+            min-width: 0;
         }
         .table-header-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            flex-wrap: wrap; 
+            flex-wrap: wrap;
             gap: 15px;
         }
         .table-header-bar h2 {
@@ -164,7 +163,7 @@
         }
         .action-buttons {
             display: flex;
-            gap: 10px; 
+            gap: 10px;
         }
         table {
             width: 100%;
@@ -191,6 +190,14 @@
         .decision-no {
             background-color: #f8d7da;
             color: #721c24;
+            font-weight: bold;
+        }
+        .suggested-alert {
+            color: #dc3545; /* Red for > 6 */
+            font-weight: bold;
+        }
+        .suggested-optimal {
+            color: #0056b3; /* Blue for optimal suggestion */
             font-weight: bold;
         }
         .col-multiplier {
@@ -222,11 +229,10 @@
 
     <h1>NIOSH Lifting Equation Calculator</h1>
 
-    <!-- Picutres -->
     <div class="top-figures-container">
         <div class="figure-box">
             <img src="noish_picture1.jpg" alt="Horizontal and Vertical Distances" id="fig1-img">
-            <div class="figure-caption">Figure 1: Task Variables (H, V and D)</div>
+            <div class="figure-caption">Figure 1: Task Variables</div>
         </div>
         <div class="figure-box">
             <img src="noish_picture2.png" alt="Asymmetry Angle" id="fig2-img">
@@ -234,10 +240,8 @@
         </div>
     </div>
 
-    <!-- Calculation -->
     <div class="main-container">
         
-        <!-- Input (left) -->
         <div class="input-section">
             <h2>Inputs</h2>
             
@@ -245,6 +249,19 @@
                 <label>Position / Task Name</label>
                 <input type="text" id="in-name" placeholder="e.g., Lifting box to conveyor">
             </div>
+
+            <div class="input-group">
+                <label>Number of Lifters</label>
+                <select id="in-lifters">
+                    <option value="1" selected>1 Person</option>
+                    <option value="2">2 People</option>
+                    <option value="3">3 People</option>
+                    <option value="4">4 People</option>
+                    <option value="5">5 People</option>
+                    <option value="6">6 People</option>
+                </select>
+            </div>
+
             <div class="input-group">
                 <label>H - Horizontal Distance (cm)</label>
                 <input type="number" id="in-h" min="0" step="any" required>
@@ -289,7 +306,6 @@
             <button class="btn btn-run" onclick="runCalculation()">▶ Run / Add to Record</button>
         </div>
 
-        <!-- Table (right) -->
         <div class="table-section">
             <div class="table-header-bar">
                 <h2>Records</h2>
@@ -303,9 +319,9 @@
                 <thead>
                     <tr>
                         <th>Position</th>
+                        <th>Lifters</th>
                         <th>H</th><th>V</th><th>D</th><th>A</th><th>F</th><th>WD</th><th>C</th>
                         <th>W_act(kg)</th>
-                        <!-- Multiplier -->
                         <th class="col-multiplier">HM</th>
                         <th class="col-multiplier">VM</th>
                         <th class="col-multiplier">DM</th>
@@ -314,18 +330,26 @@
                         <th class="col-multiplier">CM</th>
                         <th>Calculated WL(kg)</th>
                         <th>Decision</th>
-                        <th>Delete</th>
+                        <th>Suggested People</th> <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </div>
 
     <script>
         // --- NIOSH Constants & lookup tables ---
-        const LOAD_CONSTANT_KG = 23.0;
+        const LOAD_CONSTANTS = {
+            1: 23.0,
+            2: 46.0,
+            3: 63.0,
+            4: 81.0,
+            5: 98.0,
+            6: 115.0
+        };
+
         const FREQUENCY_STEPS = [0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         const FM_TABLE = {
             1: { 
@@ -347,6 +371,7 @@
         function runCalculation() {
             // 1. Get Values
             const name = document.getElementById('in-name').value || "Unnamed Task";
+            const lifters = parseInt(document.getElementById('in-lifters').value);
             const h = parseFloat(document.getElementById('in-h').value);
             const v = parseFloat(document.getElementById('in-v').value);
             const d = parseFloat(document.getElementById('in-d').value);
@@ -361,7 +386,7 @@
                 return;
             }
 
-            // 2. Calculate Multipliers with strictly bounded limits (0.0 to 1.0)
+            // 2. Calculate Multipliers
             let hm = Math.max(0, Math.min(1.0, h > 0 ? 25.0 / h : 1.0));
             let vm = Math.max(0, Math.min(1.0, 1.0 - (0.003 * Math.abs(v - 75.0))));
             let dm = Math.max(0, Math.min(1.0, d > 0 ? 0.82 + (4.5 / d) : 1.0));
@@ -389,20 +414,50 @@
             if (cChoice === 1) cm = 1.00;
             else if (cChoice === 2) cm = v < 75 ? 0.95 : 1.00;
 
-            // 3. Final WL & Decision
-            const wl = LOAD_CONSTANT_KG * hm * vm * dm * am * fm * cm;
+            // 3. Final WL & Decision calculation
+            const combined_multiplier = hm * vm * dm * am * fm * cm;
+            const wl = LOAD_CONSTANTS[lifters] * combined_multiplier;
             const decision = wl >= wActual ? 'Yes' : 'No';
+
+            // 4. Calculate Suggested People (Optimization Logic)
+            let suggestedPeople = lifters; // Default
+            let isOptimal = false; // Flag to color the cell if we optimized it
+
+            if (decision === 'Yes') {
+                // If safe, iterate DOWNWARDS to find the absolute minimum people needed
+                for (let i = lifters - 1; i >= 1; i--) {
+                    if (LOAD_CONSTANTS[i] * combined_multiplier >= wActual) {
+                        suggestedPeople = i;
+                        isOptimal = true; // We successfully reduced the required headcount
+                    } else {
+                        break; // Stop searching once it's no longer safe
+                    }
+                }
+            } else {
+                // If unsafe, iterate UPWARDS to find how many we need
+                suggestedPeople = "> 6"; 
+                for (let i = lifters + 1; i <= 6; i++) {
+                    if (LOAD_CONSTANTS[i] * combined_multiplier >= wActual) {
+                        suggestedPeople = i;
+                        isOptimal = true; // We found a safe suggestion!
+                        break;
+                    }
+                }
+            }
 
             const wdText = wdChoice === 1 ? "<=1H" : (wdChoice === 2 ? "1-2H" : "2-8H");
             const cText = cChoice === 1 ? "Good" : (cChoice === 2 ? "Fair" : "Poor");
 
-            // 4. Save to Records
+            // 5. Save to Records
             const newRecord = {
                 Name: name,
+                Lifters: lifters,
                 H: h, V: v, D: d, A: a, F: f, WD: wdText, C: cText, W_act: wActual,
                 HM: hm.toFixed(2), VM: vm.toFixed(2), DM: dm.toFixed(2), 
                 AM: am.toFixed(2), FM: fm.toFixed(2), CM: cm.toFixed(2),
-                WL: wl.toFixed(2), Decision: decision
+                WL: wl.toFixed(2), Decision: decision, 
+                Suggested_People: suggestedPeople, // Updated Key
+                _isOptimal: isOptimal 
             };
             
             records.push(newRecord);
@@ -417,6 +472,8 @@
                 const tr = document.createElement('tr');
                 
                 Object.keys(record).forEach(key => {
+                    if (key === '_isOptimal') return; // Skip internal flags
+
                     const td = document.createElement('td');
                     td.textContent = record[key];
                     
@@ -425,6 +482,13 @@
                     }
                     if (key === 'Decision') {
                         td.className = record[key] === 'Yes' ? 'decision-yes' : 'decision-no';
+                    }
+                    if (key === 'Suggested_People') {
+                        if (record[key] === '> 6') {
+                            td.className = 'suggested-alert'; // Red warning
+                        } else if (record._isOptimal) {
+                            td.className = 'suggested-optimal'; // Blue optimization text
+                        }
                     }
                     tr.appendChild(td);
                 });
@@ -459,7 +523,14 @@
                 alert("No records to export!");
                 return;
             }
-            const worksheet = XLSX.utils.json_to_sheet(records);
+            
+            const cleanRecords = records.map(rec => {
+                const cleanRec = { ...rec };
+                delete cleanRec._isOptimal;
+                return cleanRec;
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(cleanRecords);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "NIOSH_Records");
             XLSX.writeFile(workbook, "NIOSH_Lifting_Records.xlsx");
